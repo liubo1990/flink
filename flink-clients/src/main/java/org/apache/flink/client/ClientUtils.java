@@ -87,36 +87,38 @@ public enum ClientUtils {
             boolean suppressSysout)
             throws ProgramInvocationException {
         checkNotNull(executorServiceLoader);
+        // 用户程序类加载器
         final ClassLoader userCodeClassLoader = program.getUserCodeClassLoader();
+        // 线程上下文类加载器
         final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
         try {
+            // 替换当前线程上下文类加载器，以便加载用户程序类
             Thread.currentThread().setContextClassLoader(userCodeClassLoader);
-
             LOG.info(
-                    "Starting program (detached: {})",
-                    !configuration.getBoolean(DeploymentOptions.ATTACHED));
-
+                    "Starting program (detached: {})", !configuration.getBoolean(DeploymentOptions.ATTACHED));
+            // 将 合并后的有效配置、用户类加载器和用于发现可用执行器工厂PipelineExecutorFactory的类加载器放入上下文环境中
             ContextEnvironment.setAsContext(
                     executorServiceLoader,
                     configuration,
                     userCodeClassLoader,
                     enforceSingleJobExecution,
                     suppressSysout);
-
+            // 将 合并后的有效配置、用户类加载器和用于发现可用执行器工厂PipelineExecutorFactory的类加载器放入流上下文环境中
             StreamContextEnvironment.setAsContext(
                     executorServiceLoader,
                     configuration,
                     userCodeClassLoader,
                     enforceSingleJobExecution,
                     suppressSysout);
-
             try {
+                // 执行程序：执行用户程序中的main方法
                 program.invokeInteractiveModeForExecution();
             } finally {
                 ContextEnvironment.unsetAsContext();
                 StreamContextEnvironment.unsetAsContext();
             }
         } finally {
+            // 加载完用户程序类后，恢复当前线程上下文类加载器
             Thread.currentThread().setContextClassLoader(contextClassLoader);
         }
     }

@@ -92,8 +92,13 @@ public class DefaultDispatcherResourceManagerComponentFactory
             @Nonnull DispatcherRunnerFactory dispatcherRunnerFactory,
             @Nonnull ResourceManagerFactory<?> resourceManagerFactory,
             @Nonnull RestEndpointFactory<?> restEndpointFactory) {
+        // TODO 注释： dispatcherRunnerFactory = DefaultDispatcherRunnerFactory
         this.dispatcherRunnerFactory = dispatcherRunnerFactory;
+
+        // TODO 注释： resourceManagerFactory = StandaloneResourceManagerFactory
         this.resourceManagerFactory = resourceManagerFactory;
+
+        // TODO 注释： restEndpointFactory = SessionRestEndpointFactory
         this.restEndpointFactory = restEndpointFactory;
     }
 
@@ -118,12 +123,18 @@ public class DefaultDispatcherResourceManagerComponentFactory
         DispatcherRunner dispatcherRunner = null;
 
         try {
+
+            // TODO 注释： 用于 Dispatcher leader 选举
+            // TODO 注释： dispatcherLeaderRetrievalService = StandaloneLeaderRetrievalService
             dispatcherLeaderRetrievalService =
                     highAvailabilityServices.getDispatcherLeaderRetriever();
 
+            // TODO 注释： 用于 ResourceManager leader 选举
+            // TODO 注释： resourceManagerRetrievalService = StandaloneLeaderRetrievalService
             resourceManagerRetrievalService =
                     highAvailabilityServices.getResourceManagerLeaderRetriever();
 
+            // TODO 注释： Dispatcher 的 Gateway
             final LeaderGatewayRetriever<DispatcherGateway> dispatcherGatewayRetriever =
                     new RpcGatewayRetriever<>(
                             rpcService,
@@ -132,6 +143,8 @@ public class DefaultDispatcherResourceManagerComponentFactory
                             new ExponentialBackoffRetryStrategy(
                                     12, Duration.ofMillis(10), Duration.ofMillis(50)));
 
+
+            // TODO 注释： ResourceManager 的 Gateway
             final LeaderGatewayRetriever<ResourceManagerGateway> resourceManagerGatewayRetriever =
                     new RpcGatewayRetriever<>(
                             rpcService,
@@ -140,12 +153,15 @@ public class DefaultDispatcherResourceManagerComponentFactory
                             new ExponentialBackoffRetryStrategy(
                                     12, Duration.ofMillis(10), Duration.ofMillis(50)));
 
+
+            // TODO 注释： 创建线程池，用于执行 WebMonitorEndpoint 所接收到的 client 发送过来的请求
             final ScheduledExecutorService executor =
                     WebMonitorEndpoint.createExecutorService(
                             configuration.getInteger(RestOptions.SERVER_NUM_THREADS),
                             configuration.getInteger(RestOptions.SERVER_THREAD_PRIORITY),
                             "DispatcherRestEndpoint");
 
+            // TODO 注释： 初始化 MetricFetcher
             final long updateInterval =
                     configuration.getLong(MetricOptions.METRIC_FETCHER_UPDATE_INTERVAL);
             final MetricFetcher metricFetcher =
@@ -157,6 +173,14 @@ public class DefaultDispatcherResourceManagerComponentFactory
                                     dispatcherGatewayRetriever,
                                     executor);
 
+
+            /*************************************************
+             * 创建三个实例之一：
+             *  注释： 创建 WebMonitorEndpoint 实例， 在 Standalone模式下：DispatcherRestEndpoint
+             *  1、restEndpointFactory = SessionRestEndpointFactory
+             *  2、webMonitorEndpoint = DispatcherRestEndpoint
+             *  3、highAvailabilityServices.getClusterRestEndpointLeaderElectionService() = StandaloneLeaderElectionService
+             */
             webMonitorEndpoint =
                     restEndpointFactory.createRestEndpoint(
                             configuration,
@@ -168,11 +192,22 @@ public class DefaultDispatcherResourceManagerComponentFactory
                             highAvailabilityServices.getClusterRestEndpointLeaderElectionService(),
                             fatalErrorHandler);
 
+            /*************************************************
+             *  注释： 启动 DispatcherRestEndpoint
+             *  1、启动 Netty 服务端
+             *  2、选举
+             *  3、启动定时任务 ExecutionGraphCacheCleanupTask
+             */
             log.debug("Starting Dispatcher REST endpoint.");
             webMonitorEndpoint.start();
 
             final String hostname = RpcUtils.getHostname(rpcService);
 
+            /*************************************************
+             *  注释： 2.创建 StandaloneResourceManager 实例对象
+             *  1、resourceManager = StandaloneResourceManager
+             *  2、resourceManagerFactory = StandaloneResourceManagerFactory
+             */
             resourceManagerService =
                     ResourceManagerServiceImpl.create(
                             resourceManagerFactory,
@@ -207,22 +242,49 @@ public class DefaultDispatcherResourceManagerComponentFactory
                             metricRegistry.getMetricQueryServiceGatewayRpcAddress(),
                             ioExecutor);
 
+
+            /*************************************************
+             *  注释： 3.创建 并启动 Dispatcher
+             *  1、dispatcherRunner = DispatcherRunnerLeaderElectionLifecycleManager
+             *  2、dispatcherRunnerFactory = DefaultDispatcherRunnerFactory
+             *  第一个参数： StandaloneLeaderElectionService
+             *  -
+             *  老版本： 这个地方是直接创建一个 Dispatcher 对象然后调用 dispatcher.start() 来启动
+             *  新版本： 直接创建一个 DispatcherRunner， 内部就是要创建和启动 Dispatcher
+             */
             log.debug("Starting Dispatcher.");
             dispatcherRunner =
                     dispatcherRunnerFactory.createDispatcherRunner(
                             highAvailabilityServices.getDispatcherLeaderElectionService(),
                             fatalErrorHandler,
+                            // TODO 注释： 注意第三个参数
                             new HaServicesJobGraphStoreFactory(highAvailabilityServices),
                             ioExecutor,
                             rpcService,
                             partialDispatcherServices);
 
+
+            /*************************************************
+             *  注释： resourceManager 启动
+             */
             log.debug("Starting ResourceManagerService.");
             resourceManagerService.start();
 
+            /*************************************************
+             *  注释： resourceManagerRetrievalService 启动
+             */
             resourceManagerRetrievalService.start(resourceManagerGatewayRetriever);
+
+
+            /*************************************************
+             *  注释： dispatcherLeaderRetrievalService 启动
+             */
             dispatcherLeaderRetrievalService.start(dispatcherGatewayRetriever);
 
+
+            /*************************************************
+             *  注释： 构建 DispatcherResourceManagerComponent
+             */
             return new DispatcherResourceManagerComponent(
                     dispatcherRunner,
                     resourceManagerService,

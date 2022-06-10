@@ -309,11 +309,13 @@ public class RestClusterClient<T> implements ClusterClient<T> {
                 CompletableFuture.supplyAsync(
                         () -> {
                             try {
+                                // 创建一个文件存放jobGraph
                                 final java.nio.file.Path jobGraphFile =
                                         Files.createTempFile("flink-jobgraph", ".bin");
                                 try (ObjectOutputStream objectOut =
                                         new ObjectOutputStream(
                                                 Files.newOutputStream(jobGraphFile))) {
+                                    // 将jobGraph保存到文件中
                                     objectOut.writeObject(jobGraph);
                                 }
                                 return jobGraphFile;
@@ -331,11 +333,11 @@ public class RestClusterClient<T> implements ClusterClient<T> {
                             List<JobSubmitRequestBody.DistributedCacheFile> artifactFileNames =
                                     new ArrayList<>(8);
                             Collection<FileUpload> filesToUpload = new ArrayList<>(8);
-
+                            // 上传jobGraph文件
                             filesToUpload.add(
                                     new FileUpload(
                                             jobGraphFile, RestConstants.CONTENT_TYPE_BINARY));
-
+                            // 上传用户程序jar
                             for (Path jar : jobGraph.getUserJars()) {
                                 jarFileNames.add(jar.getName());
                                 filesToUpload.add(
@@ -369,7 +371,7 @@ public class RestClusterClient<T> implements ClusterClient<T> {
                                                     e));
                                 }
                             }
-
+                            // 生成提交的请求体
                             final JobSubmitRequestBody requestBody =
                                     new JobSubmitRequestBody(
                                             jobGraphFile.getFileName().toString(),
@@ -387,6 +389,7 @@ public class RestClusterClient<T> implements ClusterClient<T> {
                                     "Submitting job '{}' ({}).",
                                     jobGraph.getName(),
                                     jobGraph.getJobID());
+                            // 执行jobGraph的提交
                             return sendRetriableRequest(
                                     JobSubmitHeaders.getInstance(),
                                     EmptyMessageParameters.getInstance(),

@@ -39,6 +39,19 @@ public class StandaloneSessionClusterEntrypoint extends SessionClusterEntrypoint
                 StandaloneResourceManagerFactory.getInstance());
     }
 
+    /**
+     * usage: StandaloneSessionClusterEntrypoint -c <configuration directory> [-D
+     *        <property=value>] [-h <hostname>] [-r <rest port>] [-x <execution mode>]
+     *      -c,--configDir <configuration directory>   Directory which contains the
+     *                                                 configuration file
+     *                                                 flink-conf.yml.
+     *      -D <property=value>                        use value for given property
+     *      -h,--host <hostname>                       Hostname for the RPC service.
+     *      -r,--webui-port <rest port>                Port for the rest endpoint and
+     *                                                 the web UI.
+     *      -x,--executionMode <execution mode>        Deprecated option
+     * @param args
+     */
     public static void main(String[] args) {
         // startup checks and logging
         EnvironmentInformation.logEnvironmentInfo(

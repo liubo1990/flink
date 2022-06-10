@@ -175,6 +175,7 @@ public abstract class RestServerEndpoint implements AutoCloseableAsync {
             final Router router = new Router();
             final CompletableFuture<String> restAddressFuture = new CompletableFuture<>();
 
+            //TODO:  初始化各种Handler，包括JobSubmitHandler
             handlers = initializeHandlers(restAddressFuture);
 
             /* sort the handlers such that they are ordered the following:
@@ -298,8 +299,10 @@ public abstract class RestServerEndpoint implements AutoCloseableAsync {
 
             restAddressFuture.complete(restBaseUrl);
 
+            // TODO: 启动Netty服务端，用于接收客户端提交的应用程序
             state = State.RUNNING;
 
+            // TODO: 启动的时候会进行选举，通过选举来触发服务的启动。
             startInternal();
         }
     }

@@ -79,19 +79,19 @@ public class SqlClient {
     private void start() {
         if (isEmbedded) {
             // create local executor with default environment
-
+            // 默认上下文：包含flink-conf.yaml、用户指定的依赖jar
             DefaultContext defaultContext = LocalContextUtils.buildDefaultContext(options);
             final Executor executor = new LocalExecutor(defaultContext);
             executor.start();
 
-            // Open an new session
+            // 打开一个新session
             String sessionId = executor.openSession(options.getSessionId());
             try {
                 // add shutdown hook
                 Runtime.getRuntime()
                         .addShutdownHook(new EmbeddedShutdownThread(sessionId, executor));
 
-                // do the actual work
+                // 执行实际的任务
                 openCli(sessionId, executor);
             } finally {
                 executor.closeSession(sessionId);
@@ -117,8 +117,9 @@ public class SqlClient {
                             System.getProperty("user.home"),
                             SystemUtils.IS_OS_WINDOWS ? "flink-sql-history" : ".flink-sql-history");
         }
-
+        // 判断是否使用-f指定sql文件
         boolean hasSqlFile = options.getSqlFile() != null;
+        // 判断是否使用-u指定sql语句
         boolean hasUpdateStatement = options.getUpdateStatement() != null;
         if (hasSqlFile && hasUpdateStatement) {
             throw new IllegalArgumentException(
@@ -132,6 +133,7 @@ public class SqlClient {
 
         try (CliClient cli = new CliClient(terminalFactory, sessionId, executor, historyFilePath)) {
             if (options.getInitFile() != null) {
+                // 获取-i指定的文件内容进行初始化
                 boolean success = cli.executeInitialization(readFromURL(options.getInitFile()));
                 if (!success) {
                     System.out.println(
@@ -146,10 +148,11 @@ public class SqlClient {
                                     options.getInitFile()));
                 }
             }
-
+            // 没有使用-f或-u，进入交互模式
             if (!hasSqlFile && !hasUpdateStatement) {
                 cli.executeInInteractiveMode();
             } else {
+                // 使用-f或-u，进入非交互模式
                 cli.executeInNonInteractiveMode(readExecutionContent());
             }
         }
@@ -166,18 +169,19 @@ public class SqlClient {
         final String mode;
         final String[] modeArgs;
         if (args.length < 1 || args[0].startsWith("-")) {
-            // mode is not specified, use the default `embedded` mode
+            // 没有指定模式，则使用默认的`embedded` 模式
             mode = MODE_EMBEDDED;
             modeArgs = args;
         } else {
-            // mode is specified, extract the mode value and reaming args
+            // 指定了模式，则提取模式值[embedded/gateway]
             mode = args[0];
-            // remove mode
+            // 获取除模式值外的其他参数
             modeArgs = Arrays.copyOfRange(args, 1, args.length);
         }
 
         switch (mode) {
             case MODE_EMBEDDED:
+                // 解析用户输入参数为CliOptions实例
                 final CliOptions options = CliOptionsParser.parseEmbeddedModeClient(modeArgs);
                 if (options.isPrintHelp()) {
                     CliOptionsParser.printHelpEmbeddedModeClient();

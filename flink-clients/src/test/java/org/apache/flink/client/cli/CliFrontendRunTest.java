@@ -22,6 +22,7 @@ import org.apache.flink.client.deployment.ClusterClientServiceLoader;
 import org.apache.flink.client.deployment.DefaultClusterClientServiceLoader;
 import org.apache.flink.client.program.PackagedProgram;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.configuration.GlobalConfiguration;
 import org.apache.flink.runtime.jobgraph.SavepointRestoreSettings;
 
 import org.apache.commons.cli.CommandLine;
@@ -153,8 +154,15 @@ public class CliFrontendRunTest extends CliFrontendTestBase {
     @Test(expected = CliArgsException.class)
     public void testParallelismWithOverflow() throws Exception {
         // test configure parallelism with overflow integer value
-        String[] parameters = {"-v", "-p", "475871387138", getTestJarPath()};
-        Configuration configuration = new Configuration();
+//        String[] parameters = {"-v", "-p", "475871387138", getTestJarPath()};
+        String[] parameters = {"-v", "-p", "2","-C","file:///D:\\flink-1.14.4-bin-scala_2.12\\flink-1.14.4\\lib\\mysql-connector-java-8.0.22.jar", getTestJarPath()};
+//        Configuration configuration = new Configuration();
+        // 1.查找flink-conf.yaml的路径，需要配置环境变量FLINK_CONF_DIR
+        final String configurationDirectory = CliFrontend.getConfigurationDirectoryFromEnv();
+
+        // 2. load the global configuration 加载flink-conf.yaml文件
+        final Configuration configuration =
+                GlobalConfiguration.loadConfiguration(configurationDirectory);
         CliFrontend testFrontend =
                 new CliFrontend(configuration, Collections.singletonList(getCli()));
         testFrontend.run(parameters);

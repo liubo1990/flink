@@ -64,17 +64,18 @@ public class LocalContextUtils {
             libDirs = Collections.emptyList();
         }
 
-        // 1. find the configuration directory
+        // 1. 找到flink-conf.yaml文件所在目录
         String flinkConfigDir = CliFrontend.getConfigurationDirectoryFromEnv();
 
-        // 2. load the global configuration
+        // 2. 加载flink-conf.yaml文件
         Configuration configuration = GlobalConfiguration.loadConfiguration(flinkConfigDir);
 
-        // 3. load the custom command lines
+        // 3. 选择哪些命令类来执行这些命令，其中包括FlinkYarnSessionCli
         List<CustomCommandLine> commandLines =
                 CliFrontend.loadCustomCommandLines(configuration, flinkConfigDir);
 
         configuration.addAll(options.getPythonConfiguration());
+        // 获取所有依赖jar
         final List<URL> dependencies = discoverDependencies(jars, libDirs);
 
         return new DefaultContext(dependencies, configuration, commandLines);

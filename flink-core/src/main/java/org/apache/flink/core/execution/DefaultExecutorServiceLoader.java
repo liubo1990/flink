@@ -53,7 +53,7 @@ public class DefaultExecutorServiceLoader implements PipelineExecutorServiceLoad
     @Override
     public PipelineExecutorFactory getExecutorFactory(final Configuration configuration) {
         checkNotNull(configuration);
-
+        // 通过服务发现加载所有PipelineExecutorFactory
         final ServiceLoader<PipelineExecutorFactory> loader =
                 ServiceLoader.load(PipelineExecutorFactory.class);
 
@@ -62,6 +62,7 @@ public class DefaultExecutorServiceLoader implements PipelineExecutorServiceLoad
         while (factories.hasNext()) {
             try {
                 final PipelineExecutorFactory factory = factories.next();
+                // 通过execution.target值匹配对应的PipelineExecutorFactory
                 if (factory != null && factory.isCompatibleWith(configuration)) {
                     compatibleFactories.add(factory);
                 }

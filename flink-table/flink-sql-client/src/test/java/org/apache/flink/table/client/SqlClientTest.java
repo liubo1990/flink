@@ -65,7 +65,6 @@ public class SqlClientTest {
     private String historyPath;
 
     @Rule public Timeout timeout = new Timeout(1000, TimeUnit.SECONDS);
-
     @Before
     public void before() throws IOException {
         originalEnv = System.getenv();
@@ -193,8 +192,10 @@ public class SqlClientTest {
 
     @Test
     public void testExecuteSqlFile() throws Exception {
-        List<String> statements = Collections.singletonList("HELP;\n");
-        String sqlFilePath = createSqlFile(statements, "test-sql.sql");
+//        List<String> statements = Collections.singletonList("HELP;\n");
+        List<String> statements = Collections.singletonList("set execution.target=remote;\n");
+//        String sqlFilePath = createSqlFile(statements, "test-sql.sql");
+        String sqlFilePath = "D:\\test\\local.sql";
         String[] args = new String[] {"-f", sqlFilePath};
         String output = runSqlClient(args);
         final URL url = getClass().getClassLoader().getResource("sql-client-help-command.out");

@@ -32,13 +32,14 @@ public class TestJob {
 
     public static void main(String[] args) throws Exception {
         final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-
+        env.setParallelism(1);
         final DataStreamSource<Integer> source = env.fromElements(1, 2, 3, 4);
         final SingleOutputStreamOperator<Integer> mapper = source.map(element -> 2 * element);
         mapper.addSink(new DiscardingSink<>());
-
+        // 解析输入参数为ParameterTool实例
         ParameterTool parameterTool = ParameterTool.fromArgs(args);
-        env.execute(TestJob.class.getCanonicalName() + "-" + parameterTool.getRequired("arg"));
+//        env.execute(TestJob.class.getCanonicalName() + "-" + parameterTool.getRequired("arg"));
+        env.execute(TestJob.class.getCanonicalName() + "-" + "test");
     }
 
     /**

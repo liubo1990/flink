@@ -329,6 +329,7 @@ public class PackagedProgram implements AutoCloseable {
         }
 
         try {
+            // 通过反射获取用户程序的main方法
             mainMethod = entryClass.getMethod("main", String[].class);
         } catch (NoSuchMethodException e) {
             throw new ProgramInvocationException(
@@ -341,7 +342,7 @@ public class PackagedProgram implements AutoCloseable {
                             + t.getMessage(),
                     t);
         }
-
+        // 用户程序的main方法必须是static和public的
         if (!Modifier.isStatic(mainMethod.getModifiers())) {
             throw new ProgramInvocationException(
                     "The class " + entryClass.getName() + " declares a non-static main method.");
@@ -352,6 +353,7 @@ public class PackagedProgram implements AutoCloseable {
         }
 
         try {
+            // 执行用户程序的main方法
             mainMethod.invoke(null, (Object) args);
         } catch (IllegalArgumentException e) {
             throw new ProgramInvocationException(

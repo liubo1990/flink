@@ -64,16 +64,20 @@ public class AbstractSessionClusterExecutor<
             @Nonnull final Configuration configuration,
             @Nonnull final ClassLoader userCodeClassloader)
             throws Exception {
+        // 获取JobGraph
         final JobGraph jobGraph = PipelineExecutorUtils.getJobGraph(pipeline, configuration);
-
+        // 通过ClientFactory使用configuration创建clusterDescriptor
         try (final ClusterDescriptor<ClusterID> clusterDescriptor =
                 clusterClientFactory.createClusterDescriptor(configuration)) {
+            // 通过ClientFactory使用configuration创建clusterID
             final ClusterID clusterID = clusterClientFactory.getClusterId(configuration);
             checkState(clusterID != null);
-
+            // 创建clusterClientProvider
             final ClusterClientProvider<ClusterID> clusterClientProvider =
                     clusterDescriptor.retrieve(clusterID);
+            // 通过clusterClientProvider获取ClusterClient
             ClusterClient<ClusterID> clusterClient = clusterClientProvider.getClusterClient();
+            // 使用ClusterClient提交jobGraph
             return clusterClient
                     .submitJob(jobGraph)
                     .thenApplyAsync(

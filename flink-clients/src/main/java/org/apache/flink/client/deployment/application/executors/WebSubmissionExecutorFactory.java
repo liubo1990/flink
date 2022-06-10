@@ -65,7 +65,8 @@ public class WebSubmissionExecutorFactory implements PipelineExecutorFactory {
     public boolean isCompatibleWith(final Configuration configuration) {
         // this is always false because we simply have a special executor loader
         // for this one that does not check for compatibility.
-        return false;
+//        return false;
+        return true;
     }
 
     @Override

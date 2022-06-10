@@ -220,8 +220,9 @@ public class CliFrontend {
      */
     protected void run(String[] args) throws Exception {
         LOG.info("Running 'run' command.");
-
+        // 得到run命令支持的参数
         final Options commandOptions = CliFrontendParser.getRunCommandOptions();
+        // 对用户输入参数进行解析
         final CommandLine commandLine = getCommandLine(commandOptions, args, true);
 
         // evaluate help flag
@@ -232,17 +233,18 @@ public class CliFrontend {
 
         final CustomCommandLine activeCommandLine =
                 validateAndGetActiveCommandLine(checkNotNull(commandLine));
-
+        // 将解析后的用户输入参数封装为ProgramOptions类
         final ProgramOptions programOptions = ProgramOptions.create(commandLine);
-
+        // 获取任务jar和依赖jar
         final List<URL> jobJars = getJobJarAndDependencies(programOptions);
-
+        //合并flink-conf.yaml、自定义commandline和用户输入参数得到最终的有效配置参数，会识别yarn session还是standalone
         final Configuration effectiveConfiguration =
                 getEffectiveConfiguration(activeCommandLine, commandLine, programOptions, jobJars);
 
         LOG.debug("Effective executor configuration: {}", effectiveConfiguration);
-
+        //将用户jar路径、用户程序入口类、用户程序的输入参数、恢复用的savepoint路径、classpath路径等封装到PackagedProgram类中
         try (PackagedProgram program = getPackagedProgram(programOptions, effectiveConfiguration)) {
+            // 开始执行程序
             executeProgram(effectiveConfiguration, program);
         }
     }
@@ -1044,7 +1046,7 @@ public class CliFrontend {
         // get action
         String action = args[0];
 
-        // remove action from parameters
+        // remove action from parameters 移除action参数后的其他参数
         final String[] params = Arrays.copyOfRange(args, 1, args.length);
 
         try {
@@ -1113,23 +1115,23 @@ public class CliFrontend {
     public static void main(final String[] args) {
         EnvironmentInformation.logEnvironmentInfo(LOG, "Command Line Client", args);
 
-        // 1. find the configuration directory
+        // 1. find the configuration directory 找到flink-conf.yaml文件所在目录
         final String configurationDirectory = getConfigurationDirectoryFromEnv();
 
-        // 2. load the global configuration
+        // 2. load the global configuration 加载flink-conf.yaml文件
         final Configuration configuration =
                 GlobalConfiguration.loadConfiguration(configurationDirectory);
 
-        // 3. load the custom command lines
+        // 3. load the custom command lines 选择哪些命令类来执行这些命令，其中包括FlinkYarnSessionCli
         final List<CustomCommandLine> customCommandLines =
                 loadCustomCommandLines(configuration, configurationDirectory);
 
         int retCode = 31;
-        try {
+        try { // 构造 CliFrontend实例
             final CliFrontend cli = new CliFrontend(configuration, customCommandLines);
 
             SecurityUtils.install(new SecurityConfiguration(cli.configuration));
-            retCode = SecurityUtils.getInstalledContext().runSecured(() -> cli.parseAndRun(args));
+            retCode = SecurityUtils.getInstalledContext().runSecured(() -> cli.parseAndRun(args));//解析执行命令
         } catch (Throwable t) {
             final Throwable strippedThrowable =
                     ExceptionUtils.stripException(t, UndeclaredThrowableException.class);

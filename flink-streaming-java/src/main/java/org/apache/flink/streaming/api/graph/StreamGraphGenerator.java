@@ -303,6 +303,7 @@ public class StreamGraphGenerator {
 
     public StreamGraph generate() {
         streamGraph = new StreamGraph(executionConfig, checkpointConfig, savepointRestoreSettings);
+        // 设置execution.checkpointing.checkpoints-after-tasks-finish.enabled
         streamGraph.setEnableCheckpointsAfterTasksFinish(
                 configuration.get(
                         ExecutionCheckpointingOptions.ENABLE_CHECKPOINTS_AFTER_TASKS_FINISH));

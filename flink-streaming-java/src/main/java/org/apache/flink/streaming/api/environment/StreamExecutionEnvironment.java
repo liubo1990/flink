@@ -1911,8 +1911,10 @@ public class StreamExecutionEnvironment {
      */
     public JobExecutionResult execute(String jobName) throws Exception {
         Preconditions.checkNotNull(jobName, "Streaming Job name should not be null.");
+        // 获取StreamGraph
         final StreamGraph streamGraph = getStreamGraph();
         streamGraph.setJobName(jobName);
+        // 触发StreamGraph的执行
         return execute(streamGraph);
     }
 
@@ -2027,7 +2029,7 @@ public class StreamExecutionEnvironment {
         checkNotNull(
                 configuration.get(DeploymentOptions.TARGET),
                 "No execution.target specified in your configuration file.");
-
+        // 通过服务发现加载所有PipelineExecutorFactory，找到execution.target值对应的PipelineExecutorFactory
         final PipelineExecutorFactory executorFactory =
                 executorServiceLoader.getExecutorFactory(configuration);
 
@@ -2035,7 +2037,7 @@ public class StreamExecutionEnvironment {
                 executorFactory,
                 "Cannot find compatible factory for specified execution.target (=%s)",
                 configuration.get(DeploymentOptions.TARGET));
-
+        // 通过对应的PipelineExecutorFactory创建对应的Executor，然后执行StreamGraph
         CompletableFuture<JobClient> jobClientFuture =
                 executorFactory
                         .getExecutor(configuration)

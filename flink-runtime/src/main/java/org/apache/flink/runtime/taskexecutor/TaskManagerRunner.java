@@ -142,12 +142,12 @@ public class TaskManagerRunner implements FatalErrorHandler {
         rpcSystem = RpcSystem.load(configuration);
 
         timeout = Time.fromDuration(configuration.get(AkkaOptions.ASK_TIMEOUT_DURATION));
-
+        // 初始化一个线程池
         this.executor =
                 java.util.concurrent.Executors.newScheduledThreadPool(
                         Hardware.getNumberCPUCores(),
                         new ExecutorThreadFactory("taskmanager-future"));
-
+         // 获取高可用模式
         highAvailabilityServices =
                 HighAvailabilityServicesUtils.createHighAvailabilityServices(
                         configuration,
@@ -158,12 +158,14 @@ public class TaskManagerRunner implements FatalErrorHandler {
 
         JMXService.startInstance(configuration.getString(JMXServerOptions.JMX_SERVER_PORT));
 
+        //  创建 RPC 服务
         rpcService = createRpcService(configuration, highAvailabilityServices, rpcSystem);
 
         this.resourceId =
                 getTaskManagerResourceID(
                         configuration, rpcService.getAddress(), rpcService.getPort());
 
+        // 创建心跳服务
         HeartbeatServices heartbeatServices = HeartbeatServices.fromConfiguration(configuration);
 
         metricRegistry =
@@ -178,6 +180,7 @@ public class TaskManagerRunner implements FatalErrorHandler {
                         configuration, rpcService.getAddress(), rpcSystem);
         metricRegistry.startQueryService(metricQueryServiceRpcService, resourceId);
 
+         // 创建 BlobCacheService
         blobCacheService =
                 new BlobCacheService(
                         configuration, highAvailabilityServices.createBlobStore(), null);
@@ -186,6 +189,7 @@ public class TaskManagerRunner implements FatalErrorHandler {
                 ExternalResourceUtils.createStaticExternalResourceInfoProviderFromConfig(
                         configuration, pluginManager);
 
+        // 创建TaskExecutorService
         taskExecutorService =
                 taskExecutorServiceFactory.createTaskExecutor(
                         this.configuration,
@@ -349,6 +353,15 @@ public class TaskManagerRunner implements FatalErrorHandler {
     //  Static entry point
     // --------------------------------------------------------------------------------------------
 
+    /**
+     * usage: TaskManagerRunner -c <configuration directory> [-D <property=value>]
+     *      -c,--configDir <configuration directory>   Directory which contains the
+     *                                                 configuration file
+     *                                                 flink-conf.yml.
+     *      -D <property=value>                        use value for given property
+     * @param args
+     * @throws Exception
+     */
     public static void main(String[] args) throws Exception {
         // startup checks and logging
         EnvironmentInformation.logEnvironmentInfo(LOG, "TaskManager", args);
@@ -376,6 +389,7 @@ public class TaskManagerRunner implements FatalErrorHandler {
         final TaskManagerRunner taskManagerRunner;
 
         try {
+            // 构建 TaskManagerRunner 实例
             taskManagerRunner =
                     new TaskManagerRunner(
                             configuration,
@@ -399,12 +413,14 @@ public class TaskManagerRunner implements FatalErrorHandler {
         Configuration configuration = null;
 
         try {
+            // 加载配置
             configuration = loadConfiguration(args);
         } catch (FlinkParseException fpe) {
             LOG.error("Could not load the configuration.", fpe);
             System.exit(FAILURE_EXIT_CODE);
         }
 
+        // 启动TaskManager
         runTaskManagerProcessSecurely(checkNotNull(configuration));
     }
 
@@ -425,6 +441,7 @@ public class TaskManagerRunner implements FatalErrorHandler {
 
             exitCode =
                     SecurityUtils.getInstalledContext()
+                            // 启动TaskManager
                             .runSecured(() -> runTaskManager(configuration, pluginManager));
         } catch (Throwable t) {
             throwable = ExceptionUtils.stripException(t, UndeclaredThrowableException.class);

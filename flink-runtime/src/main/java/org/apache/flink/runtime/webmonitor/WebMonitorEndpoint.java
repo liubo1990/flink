@@ -923,7 +923,13 @@ public class WebMonitorEndpoint<T extends RestfulGateway> extends RestServerEndp
 
     @Override
     public void startInternal() throws Exception {
+        /**
+         * 参与选举的某个获胜的角色会调用： leaderElectionService.isLeader() ==> leaderContender.grantLeaderShip() ==>进一步调用WebMonitorEndpoint的grantLeadership方法。对于其它组件的也类似。
+         * 参与选举的某个失败的角色会调用： leaderElectionService.notLeader()
+         */
         leaderElectionService.start(this);
+
+        // TODO: 开启定时任务，定期清理过期了的executionGraph
         startExecutionGraphCacheCleanupTask();
 
         if (hasWebUI) {
