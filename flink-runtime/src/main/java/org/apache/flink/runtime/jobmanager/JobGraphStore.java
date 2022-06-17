@@ -52,10 +52,11 @@ public interface JobGraphStore extends JobGraphWriter {
     /**
      * A listener for {@link JobGraph} instances. This is used to react to races between multiple
      * running {@link JobGraphStore} instances (on multiple job managers).
+     * 一个JobGraph实例的监听器 ，用于对多个正在运行的 JobGraphStore实例（在多个作业管理器上）之间的竞争做出反应
      */
     interface JobGraphListener {
 
-        /**
+        /** JobGraphStore 实例添加 JobGraph 实例时会调用此方法
          * Callback for {@link JobGraph} instances added by a different {@link JobGraphStore}
          * instance.
          *

@@ -163,6 +163,7 @@ public class JobMasterServiceLeadershipRunner implements JobManagerRunner, Leade
     @Override
     public void start() throws Exception {
         LOG.debug("Start leadership runner for job {}.", getJobID());
+        // 实际调用的是StandaloneLeaderElectionService的start，并传入this
         leaderElectionService.start(this);
     }
 
@@ -245,6 +246,7 @@ public class JobMasterServiceLeadershipRunner implements JobManagerRunner, Leade
 
     @Override
     public void grantLeadership(UUID leaderSessionID) {
+        // 启动一个新的JobMasterServiceProcess进行异步处理
         runIfStateRunning(
                 () -> startJobMasterServiceProcessAsync(leaderSessionID),
                 "starting a new JobMasterServiceProcess");
@@ -258,6 +260,7 @@ public class JobMasterServiceLeadershipRunner implements JobManagerRunner, Leade
                                 runIfValidLeader(
                                         leaderSessionId,
                                         ThrowingRunnable.unchecked(
+                                                // 验证任务调度状态，创建JobMasterServiceProcess
                                                 () ->
                                                         verifyJobSchedulingStatusAndCreateJobMasterServiceProcess(
                                                                 leaderSessionId)),
@@ -275,6 +278,7 @@ public class JobMasterServiceLeadershipRunner implements JobManagerRunner, Leade
         if (jobSchedulingStatus == RunningJobsRegistry.JobSchedulingStatus.DONE) {
             jobAlreadyDone();
         } else {
+            // 创建一个新的JobMasterServiceProcess
             createNewJobMasterServiceProcess(leaderSessionId);
         }
     }
@@ -313,6 +317,7 @@ public class JobMasterServiceLeadershipRunner implements JobManagerRunner, Leade
                 leaderSessionId);
 
         try {
+            // 设置任务状态为Running
             runningJobsRegistry.setJobRunning(getJobID());
         } catch (IOException e) {
             throw new FlinkException(
@@ -322,6 +327,7 @@ public class JobMasterServiceLeadershipRunner implements JobManagerRunner, Leade
                     e);
         }
 
+        // 创建一个JobMasterServiceProcess实例，此处需要进入create方法
         jobMasterServiceProcess = jobMasterServiceProcessFactory.create(leaderSessionId);
 
         forwardIfValidLeader(

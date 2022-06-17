@@ -76,6 +76,7 @@ public class SessionDispatcherLeaderProcess extends AbstractDispatcherLeaderProc
 
         onGoingRecoveryOperation =
                 recoverJobsAsync()
+                        // 创建Dispatcher
                         .thenAccept(this::createDispatcherIfRunning)
                         .handle(this::onErrorIfRunning);
     }
@@ -93,11 +94,13 @@ public class SessionDispatcherLeaderProcess extends AbstractDispatcherLeaderProc
     }
 
     private void createDispatcherIfRunning(Collection<JobGraph> jobGraphs) {
+        // // 创建Dispatcher
         runIfStateIs(State.RUNNING, () -> createDispatcher(jobGraphs));
     }
 
     private void createDispatcher(Collection<JobGraph> jobGraphs) {
 
+        // 创建DispatcherGatewayService
         final DispatcherGatewayService dispatcherService =
                 dispatcherGatewayServiceFactory.create(
                         DispatcherId.fromUuid(getLeaderSessionId()), jobGraphs, jobGraphStore);
@@ -161,7 +164,7 @@ public class SessionDispatcherLeaderProcess extends AbstractDispatcherLeaderProc
     // ------------------------------------------------------------
     // JobGraphListener
     // ------------------------------------------------------------
-
+    // JobGraphStore 实例添加 JobGraph 实例时会调用此方法
     @Override
     public void onAddedJobGraph(JobID jobId) {
         runIfStateIs(State.RUNNING, () -> handleAddedJobGraph(jobId));

@@ -33,9 +33,10 @@ public final class FlinkPipelineTranslationUtil {
     /** Transmogrifies the given {@link Pipeline} to a {@link JobGraph}. */
     public static JobGraph getJobGraph(
             Pipeline pipeline, Configuration optimizerConfiguration, int defaultParallelism) {
-
+        // 根据pipeline判断流批处理，得到不同的转换器
         FlinkPipelineTranslator pipelineTranslator = getPipelineTranslator(pipeline);
 
+        // 转换器将pipeline转化为jobgraph
         return pipelineTranslator.translateToJobGraph(
                 pipeline, optimizerConfiguration, defaultParallelism);
     }
@@ -64,13 +65,19 @@ public final class FlinkPipelineTranslationUtil {
         return pipelineTranslator.translateToJSONExecutionPlan(pipeline);
     }
 
+    /**
+     * 根据pipeline是StreamGraph还是Plan来确定是流处理还是批处理，流处理使用StreamGraphTranslator，批处理使用PlanTranslator
+     * @param pipeline
+     * @return
+     */
     private static FlinkPipelineTranslator getPipelineTranslator(Pipeline pipeline) {
+        // 用于DataSet，先判断是否是DataSet，如果不是再判断是否是DataStream
         PlanTranslator planTranslator = new PlanTranslator();
 
         if (planTranslator.canTranslate(pipeline)) {
             return planTranslator;
         }
-
+        // 用于DataStream
         StreamGraphTranslator streamGraphTranslator = new StreamGraphTranslator();
 
         if (streamGraphTranslator.canTranslate(pipeline)) {

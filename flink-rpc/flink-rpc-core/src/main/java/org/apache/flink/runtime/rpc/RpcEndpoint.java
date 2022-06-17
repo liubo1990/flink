@@ -164,6 +164,7 @@ public abstract class RpcEndpoint implements RpcGateway, AutoCloseableAsync {
     /**
      * Triggers start of the rpc endpoint. This tells the underlying rpc server that the rpc
      * endpoint is ready to process remote procedure calls.
+     * 启动rpc endpoint的同时，也会执行onStart方法
      */
     public final void start() {
         rpcServer.start();

@@ -28,7 +28,7 @@ under the License.
 		<groupId>org.apache.flink</groupId>
 		<artifactId>flink-walkthroughs</artifactId>
 		<version>1.14-SNAPSHOT</version>
-		<relativePath>..</relativePath>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<artifactId>flink-walkthrough-datastream-scala</artifactId>

@@ -255,7 +255,7 @@ public class DefaultDispatcherResourceManagerComponentFactory
             log.debug("Starting Dispatcher.");
             dispatcherRunner =
                     dispatcherRunnerFactory.createDispatcherRunner(
-                            highAvailabilityServices.getDispatcherLeaderElectionService(),
+                            highAvailabilityServices.getDispatcherLeaderElectionService(), //StandaloneLeaderElectionService
                             fatalErrorHandler,
                             // TODO 注释： 注意第三个参数
                             new HaServicesJobGraphStoreFactory(highAvailabilityServices),

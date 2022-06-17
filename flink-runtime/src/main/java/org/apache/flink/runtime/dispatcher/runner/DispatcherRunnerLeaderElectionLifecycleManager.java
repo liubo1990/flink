@@ -35,8 +35,9 @@ final class DispatcherRunnerLeaderElectionLifecycleManager<
     private DispatcherRunnerLeaderElectionLifecycleManager(
             T dispatcherRunner, LeaderElectionService leaderElectionService) throws Exception {
         this.dispatcherRunner = dispatcherRunner;
-        this.leaderElectionService = leaderElectionService;
+        this.leaderElectionService = leaderElectionService;  //StandaloneLeaderElectionService
 
+        // 通过StandaloneLeaderElectionService来启动DefaultDispatcherRunner
         leaderElectionService.start(dispatcherRunner);
     }
 
@@ -67,6 +68,7 @@ final class DispatcherRunnerLeaderElectionLifecycleManager<
 
     public static <T extends DispatcherRunner & LeaderContender> DispatcherRunner createFor(
             T dispatcherRunner, LeaderElectionService leaderElectionService) throws Exception {
+        // 创建一个DispatcherRunnerLeaderElectionLifecycleManager，也是DispatcherRunner的实现类，其构造函数中会启动DefaultDispatcherRunner
         return new DispatcherRunnerLeaderElectionLifecycleManager<>(
                 dispatcherRunner, leaderElectionService);
     }

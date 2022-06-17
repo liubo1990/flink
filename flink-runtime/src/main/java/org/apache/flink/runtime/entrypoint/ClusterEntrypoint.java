@@ -190,6 +190,7 @@ public abstract class ClusterEntrypoint implements AutoCloseableAsync, FatalErro
             securityContext.runSecured(
                     (Callable<Void>)
                             () -> {
+                                // 运行集群，启动相关服务
                                 runCluster(configuration, pluginManager);
 
                                 return null;
@@ -267,7 +268,7 @@ public abstract class ClusterEntrypoint implements AutoCloseableAsync, FatalErro
              *  内部初始化了三大工厂实例
              *  1、DispatcherRunnerFactory = DefaultDispatcherRunnerFactory
              *  2、ResourceManagerFactory = StandaloneResourceManagerFactory
-             *  3、RestEndpointFactory（WenMonitorEndpoint的工厂） = SessionRestEndpointFactory
+             *  3、RestEndpointFactory（WebMonitorEndpoint的工厂） = SessionRestEndpointFactory
              *  返回值：DefaultDispatcherResourceManagerComponentFactory
              *  内部包含了这三个工厂实例，就是三个成员变量
              *	-
@@ -699,6 +700,7 @@ public abstract class ClusterEntrypoint implements AutoCloseableAsync, FatalErro
 
         final String clusterEntrypointName = clusterEntrypoint.getClass().getSimpleName();
         try {
+            // 启动集群
             clusterEntrypoint.startCluster();
         } catch (ClusterEntrypointException e) {
             LOG.error(

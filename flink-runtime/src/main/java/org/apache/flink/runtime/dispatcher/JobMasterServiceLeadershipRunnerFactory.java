@@ -61,14 +61,18 @@ public enum JobMasterServiceLeadershipRunnerFactory implements JobManagerRunnerF
 
         checkArgument(jobGraph.getNumberOfVertices() > 0, "The given job is empty");
 
+        // 获取jobMaster的配置
         final JobMasterConfiguration jobMasterConfiguration =
                 JobMasterConfiguration.fromConfiguration(configuration);
 
+        // 获取job注册信息，用于判断job是否在运行中
         final RunningJobsRegistry runningJobsRegistry =
                 highAvailabilityServices.getRunningJobsRegistry();
+        // 获取jobmanager的leader选举服务
         final LeaderElectionService jobManagerLeaderElectionService =
                 highAvailabilityServices.getJobManagerLeaderElectionService(jobGraph.getJobID());
 
+        // 创建slotPool服务调度器工厂实例
         final SlotPoolServiceSchedulerFactory slotPoolServiceSchedulerFactory =
                 DefaultSlotPoolServiceSchedulerFactory.fromConfiguration(
                         configuration, jobGraph.getJobType());
@@ -92,6 +96,7 @@ public enum JobMasterServiceLeadershipRunnerFactory implements JobManagerRunnerF
                                 jobGraph.getUserJarBlobKeys(), jobGraph.getClasspaths())
                         .asClassLoader();
 
+        // 创建jobMaster服务工厂实例
         final DefaultJobMasterServiceFactory jobMasterServiceFactory =
                 new DefaultJobMasterServiceFactory(
                         jobManagerServices.getIoExecutor(),
@@ -107,6 +112,7 @@ public enum JobMasterServiceLeadershipRunnerFactory implements JobManagerRunnerF
                         userCodeClassLoader,
                         initializationTimestamp);
 
+        // 创建jobMaster服务进程工厂实例
         final DefaultJobMasterServiceProcessFactory jobMasterServiceProcessFactory =
                 new DefaultJobMasterServiceProcessFactory(
                         jobGraph.getJobID(),

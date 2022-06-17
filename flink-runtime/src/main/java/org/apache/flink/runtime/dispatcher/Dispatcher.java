@@ -375,6 +375,7 @@ public abstract class Dispatcher extends PermanentlyFencedRpcEndpoint<Dispatcher
     private CompletableFuture<Acknowledge> internalSubmitJob(JobGraph jobGraph) {
         log.info("Submitting job '{}' ({}).", jobGraph.getName(), jobGraph.getJobID());
 
+        //持久化并运行作业，jobgraph会传入this::persistAndRunJob方法
         final CompletableFuture<Acknowledge> persistAndRunFuture =
                 waitForTerminatingJob(jobGraph.getJobID(), jobGraph, this::persistAndRunJob)
                         .thenApply(ignored -> Acknowledge.get());
@@ -401,16 +402,21 @@ public abstract class Dispatcher extends PermanentlyFencedRpcEndpoint<Dispatcher
     }
 
     private void persistAndRunJob(JobGraph jobGraph) throws Exception {
+        // 将jobgraph存入JobGraphStore，如果jobGraphWriter是StandaloneJobGraphStore实例，则putJobGraph方法不会做任何操作
         jobGraphWriter.putJobGraph(jobGraph);
+        // 执行任务
         runJob(jobGraph, ExecutionType.SUBMISSION);
     }
 
     private void runJob(JobGraph jobGraph, ExecutionType executionType) throws Exception {
+        // 通过一个map存放正在运行的job，此处判断是否有相同jobID的任务在运行
         Preconditions.checkState(!runningJobs.containsKey(jobGraph.getJobID()));
         long initializationTimestamp = System.currentTimeMillis();
+        // 创建JobManagerRunner，jobgraph就在其中运行，此处需要进入createJobManagerRunner方法
         JobManagerRunner jobManagerRunner =
                 createJobManagerRunner(jobGraph, initializationTimestamp);
 
+        // 以jobID为key，jobManagerRunner为value，保存到记录正在运行job的map中
         runningJobs.put(jobGraph.getJobID(), jobManagerRunner);
 
         final JobID jobId = jobGraph.getJobID();
@@ -482,6 +488,7 @@ public abstract class Dispatcher extends PermanentlyFencedRpcEndpoint<Dispatcher
             throws Exception {
         final RpcService rpcService = getRpcService();
 
+        // 1.创建JobManagerRunner，jobgraph就传入到其中，此外内部还有rpc、ha、heartbeat等服务
         JobManagerRunner runner =
                 jobManagerRunnerFactory.createJobManagerRunner(
                         jobGraph,
@@ -493,6 +500,7 @@ public abstract class Dispatcher extends PermanentlyFencedRpcEndpoint<Dispatcher
                         new DefaultJobManagerJobMetricGroupFactory(jobManagerMetricGroup),
                         fatalErrorHandler,
                         initializationTimestamp);
+        // 2.启动JobManagerRunner
         runner.start();
         return runner;
     }

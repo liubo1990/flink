@@ -109,6 +109,7 @@ public final class DefaultDispatcherRunner implements DispatcherRunner, LeaderCo
                             getClass().getSimpleName(),
                             leaderSessionID,
                             DispatcherLeaderProcess.class.getSimpleName());
+                    // 启动一个新的Dispatcher leader进程
                     startNewDispatcherLeaderProcess(leaderSessionID);
                 });
     }
@@ -116,11 +117,13 @@ public final class DefaultDispatcherRunner implements DispatcherRunner, LeaderCo
     private void startNewDispatcherLeaderProcess(UUID leaderSessionID) {
         stopDispatcherLeaderProcess();
 
+        // 创建一个新的Dispatcher leader进程
         dispatcherLeaderProcess = createNewDispatcherLeaderProcess(leaderSessionID);
 
         final DispatcherLeaderProcess newDispatcherLeaderProcess = dispatcherLeaderProcess;
         FutureUtils.assertNoException(
                 previousDispatcherLeaderProcessTerminationFuture.thenRun(
+                        // 启动DispatcherLeaderProcess，即启动SessionDispatcherLeaderProcess
                         newDispatcherLeaderProcess::start));
     }
 
@@ -134,6 +137,9 @@ public final class DefaultDispatcherRunner implements DispatcherRunner, LeaderCo
     }
 
     private DispatcherLeaderProcess createNewDispatcherLeaderProcess(UUID leaderSessionID) {
+        // dispatcherLeaderProcessFactory = SessionDispatcherLeaderProcessFactory
+        // newDispatcherLeaderProcess = SessionDispatcherLeaderProcess
+        // SessionDispatcherLeaderProcess还实现了JobGraphStore.JobGraphListener接口，这是一个JobGraph实例的监听器，用于对多个正在运行的JobGraphStore实例（在多个作业管理器上）之间的竞争做出反应
         final DispatcherLeaderProcess newDispatcherLeaderProcess =
                 dispatcherLeaderProcessFactory.create(leaderSessionID);
 
@@ -214,13 +220,15 @@ public final class DefaultDispatcherRunner implements DispatcherRunner, LeaderCo
     }
 
     public static DispatcherRunner create(
-            LeaderElectionService leaderElectionService,
+            LeaderElectionService leaderElectionService, //StandaloneLeaderElectionService
             FatalErrorHandler fatalErrorHandler,
             DispatcherLeaderProcessFactory dispatcherLeaderProcessFactory)
             throws Exception {
+        // 创建一个DefaultDispatcherRunner，是DispatcherRunner的实现类
         final DefaultDispatcherRunner dispatcherRunner =
                 new DefaultDispatcherRunner(
                         leaderElectionService, fatalErrorHandler, dispatcherLeaderProcessFactory);
+        // 创建一个DispatcherRunnerLeaderElectionLifecycleManager，也是DispatcherRunner的实现类，其内部会启动DefaultDispatcherRunner
         return DispatcherRunnerLeaderElectionLifecycleManager.createFor(
                 dispatcherRunner, leaderElectionService);
     }

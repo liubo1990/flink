@@ -58,6 +58,9 @@ class DefaultDispatcherGatewayServiceFactory
 
         final Dispatcher dispatcher;
         try {
+            // 创建Dispatcher
+            // dispatcher= StandaloneDispatcher
+            // dispatcherFactory = SessionDispatcherFactory
             dispatcher =
                     dispatcherFactory.createDispatcher(
                             rpcService,
@@ -70,7 +73,7 @@ class DefaultDispatcherGatewayServiceFactory
         } catch (Exception e) {
             throw new FlinkRuntimeException("Could not create the Dispatcher rpc endpoint.", e);
         }
-
+        // 启动dispatcher
         dispatcher.start();
 
         return DefaultDispatcherGatewayService.from(dispatcher);

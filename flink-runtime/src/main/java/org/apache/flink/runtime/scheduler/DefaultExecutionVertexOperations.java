@@ -28,6 +28,7 @@ class DefaultExecutionVertexOperations implements ExecutionVertexOperations {
 
     @Override
     public void deploy(final ExecutionVertex executionVertex) throws JobException {
+        // 将executiongGraph图中的各个任务发送给分配到的slot
         executionVertex.deploy();
     }
 

@@ -394,6 +394,7 @@ public class DefaultScheduler extends SchedulerBase implements SchedulerOperatio
         final Map<ExecutionVertexID, ExecutionVertexVersion> requiredVersionByVertex =
                 executionVertexVersioner.recordVertexModifications(verticesToDeploy);
 
+        // 切换状态为Scheduled
         transitionToScheduled(verticesToDeploy);
 
         final List<SlotExecutionVertexAssignment> slotExecutionVertexAssignments =
@@ -405,6 +406,7 @@ public class DefaultScheduler extends SchedulerBase implements SchedulerOperatio
                         deploymentOptionsByVertex,
                         slotExecutionVertexAssignments);
 
+        // 等待分配资源，然后部署任务
         waitForAllSlotsAndDeploy(deploymentHandles);
     }
 
@@ -502,6 +504,7 @@ public class DefaultScheduler extends SchedulerBase implements SchedulerOperatio
                 checkState(slotAssigned.isDone());
 
                 FutureUtils.assertNoException(
+                        // 部署任务或处理错误
                         slotAssigned.handle(deployOrHandleError(deploymentHandle)));
             }
             return null;

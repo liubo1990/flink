@@ -40,6 +40,7 @@ public class StreamGraphTranslator implements FlinkPipelineTranslator {
 
     private static final Logger LOG = LoggerFactory.getLogger(StreamGraphTranslator.class);
 
+    // 传入的配置参数configuration和并行度没有使用
     @Override
     public JobGraph translateToJobGraph(
             Pipeline pipeline, Configuration optimizerConfiguration, int defaultParallelism) {

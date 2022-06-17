@@ -426,6 +426,7 @@ public class ExecutionVertex
     }
 
     public void deploy() throws JobException {
+        // 找到被分配的solt，并将任务发送过去
         currentExecution.deploy();
     }
 

@@ -40,15 +40,11 @@ public class StandaloneSessionClusterEntrypoint extends SessionClusterEntrypoint
     }
 
     /**
-     * usage: StandaloneSessionClusterEntrypoint -c <configuration directory> [-D
-     *        <property=value>] [-h <hostname>] [-r <rest port>] [-x <execution mode>]
-     *      -c,--configDir <configuration directory>   Directory which contains the
-     *                                                 configuration file
-     *                                                 flink-conf.yml.
+     * usage: StandaloneSessionClusterEntrypoint -c <configuration directory> [-D <property=value>] [-h <hostname>] [-r <rest port>] [-x <execution mode>]
+     *      -c,--configDir <configuration directory>   Directory which contains the configuration file flink-conf.yml.
      *      -D <property=value>                        use value for given property
      *      -h,--host <hostname>                       Hostname for the RPC service.
-     *      -r,--webui-port <rest port>                Port for the rest endpoint and
-     *                                                 the web UI.
+     *      -r,--webui-port <rest port>                Port for the rest endpoint and the web UI.
      *      -x,--executionMode <execution mode>        Deprecated option
      * @param args
      */
@@ -66,9 +62,11 @@ public class StandaloneSessionClusterEntrypoint extends SessionClusterEntrypoint
                         StandaloneSessionClusterEntrypoint.class);
         Configuration configuration = loadConfiguration(entrypointClusterConfiguration);
 
+        // 创建入口类的实例
         StandaloneSessionClusterEntrypoint entrypoint =
                 new StandaloneSessionClusterEntrypoint(configuration);
 
+        //运行集群入口
         ClusterEntrypoint.runClusterEntrypoint(entrypoint);
     }
 }

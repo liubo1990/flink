@@ -52,16 +52,22 @@ public class PipelineExecutorUtils {
 
         final ExecutionConfigAccessor executionConfigAccessor =
                 ExecutionConfigAccessor.fromConfiguration(configuration);
+        // 生成jobgraph，会根据pipeline是StreamGraph还是Plan来确定是流处理还是批处理
+        // 流处理使用StreamGraphTranslator，批处理使用PlanTranslator
         final JobGraph jobGraph =
                 FlinkPipelineTranslationUtil.getJobGraph(
                         pipeline, configuration, executionConfigAccessor.getParallelism());
 
+        // 从configuration获取$internal.pipeline.job-id的值用于设置jobgraph中的jobID
         configuration
                 .getOptional(PipelineOptionsInternal.PIPELINE_FIXED_JOB_ID)
                 .ifPresent(strJobID -> jobGraph.setJobID(JobID.fromHexString(strJobID)));
 
+        // 从configuration获取pipeline.jars的值
         jobGraph.addJars(executionConfigAccessor.getJars());
+        // 从configuration获取pipeline.classpaths的值
         jobGraph.setClasspaths(executionConfigAccessor.getClasspaths());
+        // 从configuration获取execution.savepoint.path的值
         jobGraph.setSavepointRestoreSettings(executionConfigAccessor.getSavepointRestoreSettings());
 
         return jobGraph;

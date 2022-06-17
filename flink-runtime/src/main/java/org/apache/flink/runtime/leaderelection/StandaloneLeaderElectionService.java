@@ -39,6 +39,7 @@ public class StandaloneLeaderElectionService implements LeaderElectionService {
     public void start(LeaderContender newContender) throws Exception {
         if (contender != null) {
             // Service was already started
+            // start方法只能调用一次，多次调用则会直接抛出异常
             throw new IllegalArgumentException(
                     "Leader election service cannot be started multiple times.");
         }
@@ -46,6 +47,7 @@ public class StandaloneLeaderElectionService implements LeaderElectionService {
         contender = Preconditions.checkNotNull(newContender);
 
         // directly grant leadership to the given contender
+        // 直接授权竞争者作为leader，即给传入的DefaultDispatcherRunner授予leader权限，并赋予一个leaderID（用UUID生成的）
         contender.grantLeadership(HighAvailabilityServices.DEFAULT_LEADER_ID);
     }
 

@@ -386,6 +386,7 @@ public class JobMaster extends PermanentlyFencedRpcEndpoint<JobMasterId>
     @Override
     protected void onStart() throws JobMasterException {
         try {
+            //开始执行任务
             startJobExecution();
         } catch (Exception e) {
             final JobMasterException jobMasterException =
@@ -871,6 +872,7 @@ public class JobMaster extends PermanentlyFencedRpcEndpoint<JobMasterId>
         JobShuffleContext context = new JobShuffleContextImpl(jobGraph.getJobID(), this);
         shuffleMaster.registerJob(context);
 
+        // 启动slot pool和 resourceManagerLeaderRetriever
         startJobMasterServices();
 
         log.info(
@@ -879,6 +881,7 @@ public class JobMaster extends PermanentlyFencedRpcEndpoint<JobMasterId>
                 jobGraph.getJobID(),
                 getFencingToken());
 
+        // 开始调度
         startScheduling();
     }
 

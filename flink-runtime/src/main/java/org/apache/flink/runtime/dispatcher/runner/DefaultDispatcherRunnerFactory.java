@@ -42,7 +42,7 @@ public class DefaultDispatcherRunnerFactory implements DispatcherRunnerFactory {
 
     @Override
     public DispatcherRunner createDispatcherRunner(
-            LeaderElectionService leaderElectionService,
+            LeaderElectionService leaderElectionService, //StandaloneLeaderElectionService
             FatalErrorHandler fatalErrorHandler,
             JobGraphStoreFactory jobGraphStoreFactory,
             Executor ioExecutor,
@@ -50,6 +50,9 @@ public class DefaultDispatcherRunnerFactory implements DispatcherRunnerFactory {
             PartialDispatcherServices partialDispatcherServices)
             throws Exception {
 
+        // 创建dispatcher的leader进程工厂，
+        // dispatcherLeaderProcessFactory=SessionDispatcherLeaderProcessFactory，拥有一个DefaultDispatcherGatewayServiceFactory成员变量
+        // dispatcherLeaderProcessFactoryFactory=SessionDispatcherLeaderProcessFactoryFactory 是一个工厂的工厂，即用于生产一个子工厂
         final DispatcherLeaderProcessFactory dispatcherLeaderProcessFactory =
                 dispatcherLeaderProcessFactoryFactory.createFactory(
                         jobGraphStoreFactory,
@@ -58,6 +61,7 @@ public class DefaultDispatcherRunnerFactory implements DispatcherRunnerFactory {
                         partialDispatcherServices,
                         fatalErrorHandler);
 
+        // 创建 一个DispatcherRunnerLeaderElectionLifecycleManager，内部拥有一个DefaultDispatcherRunner变量，会启动Dispatcher
         return DefaultDispatcherRunner.create(
                 leaderElectionService, fatalErrorHandler, dispatcherLeaderProcessFactory);
     }
