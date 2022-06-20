@@ -204,13 +204,13 @@ public class DefaultDispatcherResourceManagerComponentFactory
             final String hostname = RpcUtils.getHostname(rpcService);
 
             /*************************************************
-             *  注释： 2.创建 StandaloneResourceManager 实例对象
+             *  注释： 2.创建 ResourceManagerService，用于维护ResourceManager的生命周期
              *  1、resourceManager = StandaloneResourceManager
              *  2、resourceManagerFactory = StandaloneResourceManagerFactory
              */
             resourceManagerService =
                     ResourceManagerServiceImpl.create(
-                            resourceManagerFactory,
+                            resourceManagerFactory, // StandaloneResourceManagerFactory
                             configuration,
                             rpcService,
                             highAvailabilityServices,

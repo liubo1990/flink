@@ -178,7 +178,8 @@ public abstract class RestServerEndpoint implements AutoCloseableAsync {
             //TODO:  初始化各种Handler，包括JobSubmitHandler
             handlers = initializeHandlers(restAddressFuture);
 
-            /* sort the handlers such that they are ordered the following:
+            /* 对handlers按照如下顺序进行排序
+             *  sort the handlers such that they are ordered the following:
              * /jobs
              * /jobs/overview
              * /jobs/:jobid

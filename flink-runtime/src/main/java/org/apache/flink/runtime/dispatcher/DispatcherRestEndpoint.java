@@ -86,7 +86,7 @@ public class DispatcherRestEndpoint extends WebMonitorEndpoint<DispatcherGateway
         List<Tuple2<RestHandlerSpecification, ChannelInboundHandler>> handlers =
                 super.initializeHandlers(localAddressFuture);
 
-        // Add the Dispatcher specific handlers
+        // Add the Dispatcher specific handlers，添加Dispatcher专用的handlers
 
         final Time timeout = restConfiguration.getTimeout();
 
